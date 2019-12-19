@@ -1,5 +1,7 @@
 {
   "name": "ionic-file-explorer",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }
