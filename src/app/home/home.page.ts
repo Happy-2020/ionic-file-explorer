@@ -116,4 +116,80 @@ export class HomePage implements OnInit {
         await alert.present();
     }
 
+    deleteFile(file: Entry)
+    {
+        let path = this.file.dataDirectory + this.folder;
+        this.file.removeFile(path, file.name).then(() => {
+            this.loadDocuments();
+        });
+    }
+
+    startCopy(file: Entry, moveFile = false)
+    {
+        this.copyFile = file;
+        this.shouldMove = moveFile;
+    }
+
+    async itemClicked(file: Entry)
+    {
+        if (this.copyFile) {
+            // Copy is in action
+            if (!file.isDirectory) {
+                let toast = await this.toastCtrl.create({
+                    message: 'Please select a folder for your operation'
+                });
+                await toast.present();
+                return;
+            }
+            // Finish the ongoing operation
+            this.finishCopyFile(file);
+        }
+        else {
+            // Open the file or folder
+            if (file.isFile) {
+                this.fileOpener.open(file.nativeURL, 'text/plain');
+            }
+            else {
+                let pathToOpen = this.folder != '' ? this.folder + '/' + file.name : file.name;
+                let folder = encodeURIComponent(pathToOpen);
+                this.router.navigateByUrl(`/home/${folder}`);
+            }
+        }
+    }
+
+    finishCopyFile(file: Entry)
+    {
+        let path = this.file.dataDirectory + this.folder;
+        let newPath = this.file.dataDirectory + this.folder + '/' + file.name;
+
+        if (this.shouldMove) {
+            if (this.copyFile.isDirectory) {
+                this.file.moveDir(path, this.copyFile.name, newPath, this.copyFile.name)
+                .then(() => {
+                    this.loadDocuments();
+                });
+            }
+            else {
+                this.file.moveFile(path, this.copyFile.name, newPath, this.copyFile.name)
+                .then(() => {
+                    this.loadDocuments();
+                });
+            }
+        }
+        else {
+            if (this.copyFile.isDirectory) {
+                this.file.copyDir(path, this.copyFile.name, newPath, this.copyFile.name)
+                .then(() => {
+                    this.loadDocuments();
+                });
+            }
+            else {
+                this.file.copyFile(path, this.copyFile.name, newPath, this.copyFile.name)
+                .then(() => {
+                    this.loadDocuments();
+                });
+            }
+        }
+    }
+
 }
